@@ -10,6 +10,7 @@ class TransaksiController extends BaseController
     protected $cart;
     protected $client;
     protected $apiKey;
+    protected $transaction;
 
     function __construct()
     {
@@ -18,6 +19,7 @@ class TransaksiController extends BaseController
         $this->cart = \Config\Services::cart();
         $this->client = new \GuzzleHttp\Client();
         $this->apiKey = env('COST_KEY');
+        $this->transaction = new TransactionModel();
     }
 
     public function index()
