@@ -16,6 +16,7 @@ class ProdukController extends BaseController
 
     public function index()
     {
+        session()->set('diskon', 200000);
         $product = $this->product->findAll();
         $data['product'] = $product;
 
@@ -43,6 +44,46 @@ class ProdukController extends BaseController
 
     return redirect('produk')->with('success', 'Data Berhasil Ditambah');
 } 
+
+private function getDiskonHariIni()
+{
+    $diskonModel = new \App\Models\DiskonModel();
+    $hariIni = date('Y-m-d');
+    return $diskonModel->where('tanggal', $hariIni)->first();
+}
+
+public function cart_add()
+{
+    $produkModel = new \App\Models\ProductModel();
+    $diskonModel = new \App\Models\DiskonModel();
+
+    $produk = $produkModel->find($this->request->getPost('id'));
+    if (!$produk) {
+        return redirect()->back()->with('error', 'Produk tidak ditemukan');
+    }
+
+    // Ambil diskon hari ini dari tabel `diskon`
+    $diskonHariIni = $diskonModel->where('tanggal', date('Y-m-d'))->first();
+    $diskon = $diskonHariIni ? $diskonHariIni['nominal'] : 0;
+
+    $hargaSetelahDiskon = max(0, $produk['harga'] - $diskon);
+
+    $this->cart->insert([
+        'id' => $produk['id_produk'],
+        'qty' => 1,
+        'price' => $hargaSetelahDiskon,
+        'name' => $produk['nama'],
+        'options' => [
+            'foto' => $produk['foto'],
+            'harga_asli' => $produk['harga'],
+            'diskon' => $diskon
+        ]
+    ]);
+
+    session()->setFlashdata('success', 'Produk berhasil ditambahkan ke keranjang dengan diskon.');
+    return redirect()->to(base_url('/keranjang'));
+}
+
 
 public function edit($id)
 {
@@ -113,4 +154,5 @@ public function download()
     // output the generated pdf
     $dompdf->stream($filename);
 }
+
 }

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\TransactionModel;
 use App\Models\TransactionDetailModel;
+use App\Models\ProductModel;
 
 class TransaksiController extends BaseController
 {
@@ -11,6 +12,7 @@ class TransaksiController extends BaseController
     protected $client;
     protected $apiKey;
     protected $transaction;
+    protected $transaction_detail;
 
     function __construct()
     {
@@ -20,6 +22,7 @@ class TransaksiController extends BaseController
         $this->client = new \GuzzleHttp\Client();
         $this->apiKey = env('COST_KEY');
         $this->transaction = new TransactionModel();
+        $this->transaction_detail = new TransactionDetailModel();
     }
 
     public function index()
@@ -27,6 +30,7 @@ class TransaksiController extends BaseController
         $data['items'] = $this->cart->contents();
         $data['total'] = $this->cart->total();
         return view('v_keranjang', $data);
+        session()->set('diskon', 200000); 
     }
 
     public function cart_add()
@@ -79,7 +83,7 @@ class TransaksiController extends BaseController
     }
 
     public function getLocation()
-    {
+{
 		//keyword pencarian yang dikirimkan dari halaman checkout
     $search = $this->request->getGet('search');
 
@@ -99,10 +103,10 @@ class TransaksiController extends BaseController
 
 public function getCost()
 { 
-	//ID lokasi yang dikirimkan dari halaman checkout
+		//ID lokasi yang dikirimkan dari halaman checkout
     $destination = $this->request->getGet('destination');
 
-	//parameter daerah asal pengiriman, berat produk, dan kurir dibuat statis
+		//parameter daerah asal pengiriman, berat produk, dan kurir dibuat statis
     //valuenya => 64999 : PEDURUNGAN TENGAH , 1000 gram, dan JNE
     $response = $this->client->request(
         'POST', 
@@ -158,17 +162,18 @@ public function buy()
                 'transaction_id' => $last_insert_id,
                 'product_id' => $value['id'],
                 'jumlah' => $value['qty'],
-                'diskon' => 0,
+                'diskon' => $value['options']['diskon'] ?? 0,
                 'subtotal_harga' => $value['qty'] * $value['price'],
                 'created_at' => date("Y-m-d H:i:s"),
                 'updated_at' => date("Y-m-d H:i:s")
             ];
-
+            
             $this->transaction_detail->insert($dataFormDetail);
         }
 
+
         $this->cart->destroy();
- 
+
         return redirect()->to(base_url());
     }
 }

@@ -34,3 +34,7 @@ if (session()->getFlashData('success')) {
 </div>
 <!-- End Table with stripped rows -->
 <?= $this->endSection() ?>
+
+<pre>
+<?= var_dump(session()->get()) ?>
+</pre>

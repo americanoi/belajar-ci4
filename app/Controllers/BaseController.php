@@ -50,9 +50,22 @@ abstract class BaseController extends Controller
     {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
+        $diskonModel = new \App\Models\DiskonModel();
+        $hariIni = date('Y-m-d');
 
+        $diskonHariIni = $diskonModel->where('tanggal', $hariIni)->first();
+
+        if ($diskonHariIni) {
+            session()->set('diskon_nominal', $diskonHariIni['nominal']);
+        } else {
+            session()->remove('diskon_nominal');
+        }
         // Preload any models, libraries, etc, here.
 
         // E.g.: $this->session = service('session');
+        if (!session()->has('diskon')) {
+        session()->set('diskon', 200000); // Diskon Rp 200.000 berlaku setiap sesi
+        }
+
     }
 }

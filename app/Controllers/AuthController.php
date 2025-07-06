@@ -2,21 +2,22 @@
 
 namespace App\Controllers;
 
+use App\Models\UserModel; 
 use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
 
-use App\Models\UserModel;
 class AuthController extends BaseController
 {
     protected $user;
+
     function __construct()
     {
         helper('form');
-        $this->user = new UserModel();
+        $this->user= new UserModel();
     }
 
-   public function login()
-{
+    public function login()
+    {
     if ($this->request->getPost()) {
         $rules = [
             'username' => 'required|min_length[6]',
@@ -54,6 +55,7 @@ class AuthController extends BaseController
 
     return view('v_login');
 }
+
     public function logout()
     {
         session()->destroy();
